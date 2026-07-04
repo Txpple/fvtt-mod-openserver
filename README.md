@@ -21,24 +21,31 @@ Then enable **Open Server (Auto-Unpause)** in your world's
 
 ## What it does
 
-- When the world loads and is paused, the module clears the pause the moment
-  the first **GM-level user** (GM or Assistant GM) finishes loading.
-- The unpaused state persists — after the GM logs off, the world stays open
-  for players.
-- That's it. One `ready` hook, ~20 lines, no configuration, no UI.
+Two cases, handled automatically as each client finishes loading:
+
+- **A GM (or Assistant GM) logs in** → the module clears the real pause for
+  everyone, persistently. After the GM logs off, the world stays open.
+- **A player logs in, the world is paused, and no GM is online** (the hosted
+  "player start URL" case) → the module lifts the pause **locally on that
+  player's client**, so they can move their tokens, open doors, and play.
+  Players can never change the *server's* pause state — that's a core Foundry
+  permission — but the checks that block a paused player run client-side, so
+  a local lift is all they need.
+
+That's it. One `ready` hook, no configuration, no UI.
 
 ## Good to know
 
-- **A GM-level login is what clears the pause.** Foundry only lets GM-level
-  users change the pause state — a player client has no permission to do it.
-  If the world boots and *only* players connect (no GM has loaded in since
-  boot), core Foundry provides no way around that. In practice: the first
-  time you (or any assistant GM) touch the world after it starts, it opens,
-  and it stays open.
+- **A deliberate pause is respected.** If a GM is online and the world is
+  paused, the module assumes that's on purpose and leaves players paused.
+  The no-GM local lift only happens at login, into a world nobody is running.
 - **Pausing mid-session still works.** The module only acts when a client
   finishes loading (the `ready` hook). Press space during a session and the
-  game pauses like normal — just know that if a GM then reloads their
-  browser, the world unpauses again.
+  game pauses like normal for everyone — just know that if a GM then reloads
+  their browser, the world unpauses again.
+- **The server still reports "paused" until a GM connects.** A player's local
+  lift doesn't change the stored state (it can't); the first GM login squares
+  it for real. Harmless either way.
 - **Compatibility:** Foundry v11 through v14 (it handles the
   `togglePause` API change in v12 automatically).
 
