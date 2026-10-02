@@ -1,8 +1,8 @@
 {
   "id": "fvtt-mod-openserver",
-  "title": "Open Server",
-  "description": "Configuration-free module for hosted worlds. Clears the game pause when the world comes up, so a world (e.g. on Molten Hosting) never sits paused waiting for someone to press space. Also adds a per-user LANDING SCENE: flag a user and they log in to their own scene instead of the one active scene, so a party split survives a refresh. Install it, enable it, forget it.",
-  "version": "1.2.0",
+  "title": "Open Roll 5e: Open Server",
+  "description": "Clears the pause a hosted world comes up with, so players can log in and play before the GM arrives, and lets a GM give any user a landing scene of their own.",
+  "version": "1.3.0",
   "authors": [
     {
       "name": "Matthew Sippel"
@@ -17,7 +17,7 @@
   },
   "url": "https://github.com/Txpple/fvtt-mod-openserver",
   "manifest": "https://github.com/Txpple/fvtt-mod-openserver/releases/latest/download/module.json",
-  "download": "https://github.com/Txpple/fvtt-mod-openserver/releases/download/v1.2.0/fvtt-mod-openserver.zip",
+  "download": "https://github.com/Txpple/fvtt-mod-openserver/releases/download/v1.3.0/fvtt-mod-openserver.zip",
   "readme": "https://github.com/Txpple/fvtt-mod-openserver#readme",
   "license": "MIT"
 }
