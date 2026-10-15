@@ -63,8 +63,14 @@ landing scene can also be assigned from Claude Code.
 ## Development
 
 There is no build step: the module is one plain ES module, `scripts/openserver.js`, loaded
-straight from the repo. Releases: bump `version` and the `download` URL in `module.json` together,
-tag `vX.Y.Z`, and publish a zip of the module with the manifest as a GitHub release.
+straight from the repo.
+
+Releases: bump `version` and the `download` URL in `module.json` together and commit, then
+push an annotated tag `vX.Y.Z` on `main` whose subject is the release title and whose body is the
+notes. `.github/workflows/release.yml` hands it to the family's reusable release workflow (in
+fvtt-suite-openroll5e), which checks the tag, builds the zip of `module.json` and the served
+folders, reads it back, and publishes it with a bare `module.json`. Run the workflow by hand for a
+dry run: the same checks and build, the zip kept as an artifact.
 
 <!-- openroll5e:family -->
 ## Part of Open Roll 5e
