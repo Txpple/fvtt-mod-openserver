@@ -4,14 +4,17 @@
  * The caller hands over every scene with, per scene, the id of the character's token there (or
  * null), and the active scene's id. The answer is one of three:
  *
- *   { kind: "jump", sceneId, tokenId }   the active scene has a token, or exactly one scene does
- *   { kind: "list", options: [...] }     several scenes have one and none of them is active;
- *                                        each option is { sceneId, name, tokenId }, navigation-bar
- *                                        scenes first in bar order, then the rest by name
+ *   { kind: "jump", sceneId, tokenId }   the active scene has a token, else the scene the user is
+ *                                        viewing has one, else exactly one scene does
+ *   { kind: "list", options: [...] }     several scenes have one, neither the active nor the viewed
+ *                                        among them; each option is { sceneId, name, tokenId },
+ *                                        navigation-bar scenes first in bar order, then the rest
+ *                                        by name
  *   { kind: "none" }                     the character has no token on any scene
  *
  * The active scene wins because that is where the table is; a token there is the one the player
- * means even when a copy stands somewhere else.
+ * means even when a copy stands somewhere else. The viewed scene comes next: a player on a side
+ * map with their own token in front of them wants it selected, not a question.
  */
 
 /** @typedef {{ id: string, name: string, active?: boolean, navigation?: boolean, navOrder?: number, tokenId: string | null | undefined }} JumpScene */
@@ -30,13 +33,15 @@ export function orderScenes(scenes) {
 }
 
 /**
- * @param {{ scenes: JumpScene[], activeSceneId?: string | null }} input
+ * @param {{ scenes: JumpScene[], activeSceneId?: string | null, viewedSceneId?: string | null }} input
  * @returns {{ kind: "jump", sceneId: string, tokenId: string } | { kind: "list", options: { sceneId: string, name: string, tokenId: string }[] } | { kind: "none" }}
  */
-export function decideJump({ scenes, activeSceneId = null }) {
+export function decideJump({ scenes, activeSceneId = null, viewedSceneId = null }) {
   const withToken = (scenes ?? []).filter(s => s?.tokenId);
   const active = withToken.find(s => s.id === activeSceneId || (activeSceneId == null && s.active));
   if (active) return { kind: "jump", sceneId: active.id, tokenId: active.tokenId };
+  const viewed = viewedSceneId ? withToken.find(s => s.id === viewedSceneId) : null;
+  if (viewed) return { kind: "jump", sceneId: viewed.id, tokenId: viewed.tokenId };
   if (withToken.length === 0) return { kind: "none" };
   if (withToken.length === 1) {
     return { kind: "jump", sceneId: withToken[0].id, tokenId: withToken[0].tokenId };

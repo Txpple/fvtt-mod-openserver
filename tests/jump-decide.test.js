@@ -32,6 +32,35 @@ describe("the active scene wins", () => {
   });
 });
 
+describe("the viewed scene comes next", () => {
+  const scenes = [
+    scene("town", { active: true }),
+    scene("attic", { tokenId: "t1" }),
+    scene("camp", { tokenId: "t2" })
+  ];
+
+  it("jumps to the token on the scene the user is looking at, with no list", () => {
+    expect(decideJump({ scenes, activeSceneId: "town", viewedSceneId: "attic" })).toEqual({
+      kind: "jump",
+      sceneId: "attic",
+      tokenId: "t1"
+    });
+  });
+
+  it("still lets the active scene win over the viewed one", () => {
+    const both = [scene("town", { active: true, tokenId: "t0" }), ...scenes.slice(1)];
+    expect(decideJump({ scenes: both, activeSceneId: "town", viewedSceneId: "attic" })).toEqual({
+      kind: "jump",
+      sceneId: "town",
+      tokenId: "t0"
+    });
+  });
+
+  it("lists when the viewed scene has no token either", () => {
+    expect(decideJump({ scenes, activeSceneId: "town", viewedSceneId: "town" }).kind).toBe("list");
+  });
+});
+
 describe("one scene jumps, several list", () => {
   it("jumps without a list when exactly one scene has a token", () => {
     const scenes = [scene("a"), scene("b", { tokenId: "t9" }), scene("c")];

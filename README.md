@@ -69,10 +69,13 @@ Which token:
 
 - **The active scene wins.** If the character has a token on the active scene, that is the one,
   even when a copy stands somewhere else.
-- **One scene jumps.** If the active scene has none and exactly one other scene does, the jump goes
-  there without asking.
-- **Several scenes ask.** A small dialog lists the scenes that have one, the navigation bar's first
-  in bar order, then the rest by name; one click jumps, or cancel.
+- **Then the scene you are looking at.** On a side map with your own token in front of you, the
+  jump selects it there; no question.
+- **One scene jumps.** If neither has one and exactly one other scene does, the jump goes there
+  without asking.
+- **Several scenes ask.** A small dialog lists the scenes that have one as a pick list, the
+  navigation bar's first in bar order, then the rest by name, the first chosen; Jump (or Enter)
+  goes, Cancel stays. A second click on the crosshair replaces the list rather than stacking one.
 - **None says so.** With no token anywhere, the view goes to the active scene and a notice reads
   "<character> has no token on any scene".
 

@@ -20,3 +20,25 @@
   opacity: 1;
   color: var(--player-color, inherit);
 }
+
+/* The pick list when the character stands on several scenes. */
+.openserver-jump-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+.openserver-jump-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  line-height: 1.6;
+}
+.openserver-jump-option input[type="radio"] {
+  flex: 0 0 auto;
+  margin: 0;
+}

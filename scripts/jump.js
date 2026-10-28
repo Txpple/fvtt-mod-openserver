@@ -19,6 +19,39 @@ const BUTTON_CLASS = "openserver-jump";
 
 const say = (key, data) => game.i18n.format(`${MODULE}.jump.${key}`, data ?? {});
 
+/**
+ * The one pick list. A click claims the slot synchronously, so a burst of clicks closes whatever
+ * came before it (each resolving null) and leaves exactly one list open.
+ */
+let picker = null;
+
+function claimPicker() {
+  const previous = picker;
+  const mine = {
+    dialog: null,
+    closed: false,
+    async closeNow() {
+      mine.closed = true;
+      if (mine.dialog) {
+        try {
+          await mine.dialog.close();
+        } catch (err) {
+          console.error(`${MODULE} | could not close the previous pick list`, err);
+        }
+      }
+    },
+    attach(dialog) {
+      mine.dialog = dialog;
+      if (mine.closed) mine.closeNow().catch(() => {});
+    },
+    release() {
+      if (picker === mine) picker = null;
+    }
+  };
+  picker = mine;
+  return { mine, previous };
+}
+
 /** The row's user may jump when it is their own row, or they are a GM; the row needs a character. */
 function characterFor(user) {
   if (!user?.character) return null;
@@ -71,7 +104,8 @@ Hooks.on("renderPlayers", (_app, html) => {
 export async function jumpToCharacter(character) {
   const decision = decideJump({
     scenes: scenesWithToken(character.id, game.scenes),
-    activeSceneId: game.scenes.active?.id ?? null
+    activeSceneId: game.scenes.active?.id ?? null,
+    viewedSceneId: canvas.scene?.id ?? null
   });
   if (decision.kind === "jump") return jumpTo(character, decision.sceneId, decision.tokenId);
   if (decision.kind === "none") {
@@ -111,38 +145,68 @@ async function jumpTo(character, sceneId, tokenId) {
 }
 
 /**
- * Several scenes have a token: one button per scene, plus cancel. Resolves the option, or null.
+ * Several scenes have a token: a pick list, one radio per scene with the first chosen, then Jump
+ * (Enter) and Cancel. Resolves the option, or null.
  * @returns {Promise<{ sceneId: string, name: string, tokenId: string } | null>}
  */
 async function pickScene(character, options) {
+  const { mine, previous } = claimPicker();
+  if (previous) await previous.closeNow();
+  if (mine.closed) return null;
+  const esc = Handlebars.escapeExpression;
   const title = say("pick.title", { name: character.name });
-  const content = `<p>${Handlebars.escapeExpression(say("pick.content", { name: character.name }))}</p>`;
+  const rows = options
+    .map(
+      (option, i) =>
+        `<label class="openserver-jump-option"><input type="radio" name="scene" value="${i}"${i === 0 ? " checked" : ""}>` +
+        `<span>${esc(option.name)}</span></label>`
+    )
+    .join("");
+  const content =
+    `<p>${esc(say("pick.content", { name: character.name }))}</p>` +
+    `<fieldset class="openserver-jump-pick">${rows}</fieldset>`;
+  const chosen = form => {
+    const value = form?.elements?.scene?.value;
+    return value === undefined || value === "" ? null : (options[Number(value)] ?? null);
+  };
   const DialogV2 = foundry.applications?.api?.DialogV2;
   if (DialogV2) {
     const picked = await DialogV2.wait({
       window: { title, icon: "fa-solid fa-crosshairs" },
-      position: { width: 420 },
+      position: { width: 360 },
       content,
+      render: (_event, dialog) => mine.attach(dialog),
+      close: () => mine.release(),
       buttons: [
-        ...options.map((option, i) => ({
-          action: `scene-${i}`,
-          label: option.name,
-          icon: "fa-solid fa-map",
-          callback: () => option
-        })),
+        {
+          action: "jump",
+          label: say("pick.jump"),
+          icon: "fa-solid fa-crosshairs",
+          default: true,
+          callback: (_event, button) => chosen(button.form)
+        },
         { action: "cancel", label: say("pick.cancel"), icon: "fa-solid fa-xmark", callback: () => null }
       ],
       rejectClose: false
     });
-    return picked ?? null;
+    return mine.closed ? null : (picked ?? null);
   }
   // Foundry 11: the legacy Dialog.
   return new Promise(resolve => {
-    const buttons = {};
-    options.forEach((option, i) => {
-      buttons[`scene-${i}`] = { label: option.name, callback: () => resolve(option) };
+    const dialog = new Dialog({
+      title,
+      content,
+      buttons: {
+        jump: { label: say("pick.jump"), callback: html => resolve(chosen(html[0]?.querySelector("form") ?? html[0])) },
+        cancel: { label: say("pick.cancel"), callback: () => resolve(null) }
+      },
+      default: "jump",
+      close: () => {
+        mine.release();
+        resolve(null);
+      }
     });
-    buttons.cancel = { label: say("pick.cancel"), callback: () => resolve(null) };
-    new Dialog({ title, content, buttons, default: "cancel", close: () => resolve(null) }).render(true);
+    mine.attach(dialog);
+    dialog.render(true);
   });
 }
