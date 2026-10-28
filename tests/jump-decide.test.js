@@ -57,7 +57,49 @@ describe("the viewed scene comes next", () => {
   });
 
   it("lists when the viewed scene has no token either", () => {
-    expect(decideJump({ scenes, activeSceneId: "town", viewedSceneId: "town" }).kind).toBe("list");
+    expect(decideJump({ scenes, activeSceneId: "town", viewedSceneId: "elsewhere" }).kind).toBe(
+      "list"
+    );
+  });
+});
+
+describe("a player with the table stays", () => {
+  const scenes = [
+    scene("town", { active: true }),
+    scene("attic", { tokenId: "t1" }),
+    scene("camp", { tokenId: "t2" })
+  ];
+
+  it("keeps a player on the active scene when the token is elsewhere, and says so", () => {
+    expect(decideJump({ scenes, activeSceneId: "town", viewedSceneId: "town" })).toEqual({
+      kind: "stay"
+    });
+    const one = [scene("town", { active: true }), scene("attic", { tokenId: "t1" })];
+    expect(decideJump({ scenes: one, activeSceneId: "town", viewedSceneId: "town" })).toEqual({
+      kind: "stay"
+    });
+  });
+
+  it("lets a GM jump off the active scene", () => {
+    expect(
+      decideJump({ scenes, activeSceneId: "town", viewedSceneId: "town", isGM: true }).kind
+    ).toBe("list");
+  });
+
+  it("still brings a player back from a side map", () => {
+    expect(decideJump({ scenes, activeSceneId: "town", viewedSceneId: "elsewhere" }).kind).toBe(
+      "list"
+    );
+  });
+
+  it("says none before stay when there is no token anywhere", () => {
+    expect(
+      decideJump({
+        scenes: [scene("town", { active: true })],
+        activeSceneId: "town",
+        viewedSceneId: "town"
+      })
+    ).toEqual({ kind: "none" });
   });
 });
 

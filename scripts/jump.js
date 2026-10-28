@@ -9,8 +9,11 @@
  * says so and shows the active scene. The rule itself is scripts/jump-decide.js, with no Foundry
  * in it, so it has tests.
  *
- * Why this is allowed for a player: Scene#view carries no permission gate (the landing scene
- * rests on the same fact), and a player controls their own character's tokens.
+ * A player already on the active scene is not taken off it: the table is there, so the button only
+ * says where the token is. A GM jumps from anywhere to anywhere.
+ *
+ * Why this is allowed for a player: Scene#view carries no permission gate (probed on 14.364 and
+ * again on 14.369), and a player controls their own character's tokens.
  */
 import { decideJump, scenesWithToken } from "./jump-decide.js";
 
@@ -105,9 +108,14 @@ export async function jumpToCharacter(character) {
   const decision = decideJump({
     scenes: scenesWithToken(character.id, game.scenes),
     activeSceneId: game.scenes.active?.id ?? null,
-    viewedSceneId: canvas.scene?.id ?? null
+    viewedSceneId: canvas.scene?.id ?? null,
+    isGM: game.user.isGM
   });
   if (decision.kind === "jump") return jumpTo(character, decision.sceneId, decision.tokenId);
+  if (decision.kind === "stay") {
+    ui.notifications.info(say("stay", { name: character.name }));
+    return;
+  }
   if (decision.kind === "none") {
     const active = game.scenes.active;
     if (active && !active.isView) await active.view();

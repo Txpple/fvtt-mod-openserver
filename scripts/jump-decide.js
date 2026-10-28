@@ -11,10 +11,14 @@
  *                                        navigation-bar scenes first in bar order, then the rest
  *                                        by name
  *   { kind: "none" }                     the character has no token on any scene
+ *   { kind: "stay" }                     a player (not a GM) is on the active scene and the token is
+ *                                        elsewhere: the table is here, so they stay and are told
  *
  * The active scene wins because that is where the table is; a token there is the one the player
  * means even when a copy stands somewhere else. The viewed scene comes next: a player on a side
- * map with their own token in front of them wants it selected, not a question.
+ * map with their own token in front of them wants it selected, not a question. And a player who
+ * is already with the table is not taken off it; only a GM jumps from the active scene to a side
+ * map.
  */
 
 /** @typedef {{ id: string, name: string, active?: boolean, navigation?: boolean, navOrder?: number, tokenId: string | null | undefined }} JumpScene */
@@ -33,16 +37,18 @@ export function orderScenes(scenes) {
 }
 
 /**
- * @param {{ scenes: JumpScene[], activeSceneId?: string | null, viewedSceneId?: string | null }} input
- * @returns {{ kind: "jump", sceneId: string, tokenId: string } | { kind: "list", options: { sceneId: string, name: string, tokenId: string }[] } | { kind: "none" }}
+ * @param {{ scenes: JumpScene[], activeSceneId?: string | null, viewedSceneId?: string | null, isGM?: boolean }} input
+ * @returns {{ kind: "jump", sceneId: string, tokenId: string } | { kind: "list", options: { sceneId: string, name: string, tokenId: string }[] } | { kind: "none" } | { kind: "stay" }}
  */
-export function decideJump({ scenes, activeSceneId = null, viewedSceneId = null }) {
+export function decideJump({ scenes, activeSceneId = null, viewedSceneId = null, isGM = false }) {
   const withToken = (scenes ?? []).filter(s => s?.tokenId);
-  const active = withToken.find(s => s.id === activeSceneId || (activeSceneId == null && s.active));
+  const activeId = activeSceneId ?? (scenes ?? []).find(s => s?.active)?.id ?? null;
+  const active = withToken.find(s => s.id === activeId);
   if (active) return { kind: "jump", sceneId: active.id, tokenId: active.tokenId };
   const viewed = viewedSceneId ? withToken.find(s => s.id === viewedSceneId) : null;
   if (viewed) return { kind: "jump", sceneId: viewed.id, tokenId: viewed.tokenId };
   if (withToken.length === 0) return { kind: "none" };
+  if (!isGM && activeId && viewedSceneId === activeId) return { kind: "stay" };
   if (withToken.length === 1) {
     return { kind: "jump", sceneId: withToken[0].id, tokenId: withToken[0].tokenId };
   }

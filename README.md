@@ -2,9 +2,8 @@
 
 A Foundry VTT module for hosted worlds. A world comes up paused, so on a hosted server players who
 log in before the GM are stuck waiting for someone to press space. Open Server clears that pause at
-login. It also gives each user an optional landing scene of their own, so a party split survives a
-refresh or a fresh login, and a button beside each name in the Players list that jumps to that
-player's character wherever its token stands. There are no settings.
+login. It also puts a button beside each name in the Players list that jumps to that player's
+character wherever its token stands, so nobody is ever lost on the wrong map. There are no settings.
 
 ## How it works
 
@@ -15,7 +14,6 @@ player's character wherever its token stands. There are no settings.
   run on their own client, so a local lift is enough to play.
 - **A pause with a GM online is respected.** The module assumes it is deliberate and leaves players
   paused.
-- **A flagged user lands on their own scene.** Unflagged users follow the active scene as usual.
 - **Anyone can jump to their character.** One click in the Players list views the scene the token
   is on, selects it and pans to it; a GM has the same button for every player.
 
@@ -29,37 +27,9 @@ https://github.com/Txpple/fvtt-mod-openserver/releases/latest/download/module.js
 
 Requires Foundry VTT v11 through v14. It works with any game system and has no dependencies.
 
-## Landing scene
-
-Foundry has no per-user landing scene: every user lands on the active scene at every login. A GM can
-send one player to a side scene, but a refresh puts them back with everyone else. To give a user a
-scene of their own, set a flag on them from the console or a macro:
-
-```js
-game.users.getName("Tom").setFlag("fvtt-mod-openserver", "landingScene", scene.id);
-```
-
-Tom lands on that scene from then on. To put them back with the party:
-
-```js
-game.users.getName("Tom").unsetFlag("fvtt-mod-openserver", "landingScene");
-```
-
-- **No scene ownership is needed.** Viewing a scene has no permission check in Foundry.
-- **The flag is sticky.** It stays until a GM clears it, so activating a new scene does not move
-  flagged users.
-- **Expect a brief flash.** The switch happens once the client has loaded, after the active scene is
-  already drawn, the same as a cross-scene teleporter.
-- **A deleted scene is safe.** If the flagged scene no longer exists, the user stays on the active
-  scene and the console logs a warning naming the stale flag.
-
-The Open Roll 5e dnd5e MCP server sets the same flag through its `set-landing-scene` tool, so a
-landing scene can also be assigned from Claude Code.
-
 ## Jump to my character
 
-The landing scene says where a user's view goes at login. This is for the rest of the session: a
-player who walked a familiar onto another map, or was left on a side scene after a teleport went
+A player who walked a familiar onto another map, or was left on a side scene after a teleport went
 wrong, had no way back to their own character short of asking the GM. Now a crosshair sits beside
 their name in the Players list (bottom left). Hover it and it reads "Jump to <character>"; click it
 and the view goes to the character's token, selects it, releasing anything else selected, and pans
@@ -78,12 +48,18 @@ Which token:
   goes, Cancel stays. A second click on the crosshair replaces the list rather than stacking one.
 - **None says so.** With no token anywhere, the view goes to the active scene and a notice reads
   "<character> has no token on any scene".
+- **A player with the table stays.** On the active scene with the token elsewhere, a player is not
+  taken off it; a notice says the token is on another scene. A GM jumps from anywhere to anywhere.
 
 A player sees the button on their own row, when they have an assigned character. A GM sees one on
 every row whose user has one, their own included, and the jump works the same from there: a quick
-way to find any player's character. A user with no assigned character has no button. Viewing the
-scene needs no ownership, as with the landing scene; selecting the token needs what the player
-already has, control of their own character.
+way to find any player's character. A user with no assigned character has no button. Viewing a
+scene has no permission check in Foundry, so no scene ownership is needed; selecting the token needs
+what the player already has, control of their own character.
+
+Open Server 1.x also offered a per-user landing scene, a flag a GM set so a user landed on a scene
+of their own at every login. It is gone from 1.4: with the jump one click away, a sticky seat was
+not worth its edge cases. A flag left on a user does nothing.
 
 ## Good to know
 

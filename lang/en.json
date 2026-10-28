@@ -9,6 +9,7 @@
         "cancel": "Cancel"
       },
       "none": "{name} has no token on any scene",
+      "stay": "{name} has no token on the active scene. You are already where the table is.",
       "gone": "{name}'s token is no longer on {scene}",
       "busy": "The canvas is still loading; try the jump again in a moment"
     }
