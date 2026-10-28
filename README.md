@@ -3,7 +3,8 @@
 A Foundry VTT module for hosted worlds. A world comes up paused, so on a hosted server players who
 log in before the GM are stuck waiting for someone to press space. Open Server clears that pause at
 login. It also gives each user an optional landing scene of their own, so a party split survives a
-refresh or a fresh login. There are no settings.
+refresh or a fresh login, and a button beside each name in the Players list that jumps to that
+player's character wherever its token stands. There are no settings.
 
 ## How it works
 
@@ -15,6 +16,8 @@ refresh or a fresh login. There are no settings.
 - **A pause with a GM online is respected.** The module assumes it is deliberate and leaves players
   paused.
 - **A flagged user lands on their own scene.** Unflagged users follow the active scene as usual.
+- **Anyone can jump to their character.** One click in the Players list views the scene the token
+  is on, selects it and pans to it; a GM has the same button for every player.
 
 ## Installation
 
@@ -52,6 +55,32 @@ game.users.getName("Tom").unsetFlag("fvtt-mod-openserver", "landingScene");
 
 The Open Roll 5e dnd5e MCP server sets the same flag through its `set-landing-scene` tool, so a
 landing scene can also be assigned from Claude Code.
+
+## Jump to my character
+
+The landing scene says where a user's view goes at login. This is for the rest of the session: a
+player who walked a familiar onto another map, or was left on a side scene after a teleport went
+wrong, had no way back to their own character short of asking the GM. Now a crosshair sits beside
+their name in the Players list (bottom left). Hover it and it reads "Jump to <character>"; click it
+and the view goes to the character's token, selects it, releasing anything else selected, and pans
+to it. All of it happens on the clicking user's own client; nothing is written and no GM is needed.
+
+Which token:
+
+- **The active scene wins.** If the character has a token on the active scene, that is the one,
+  even when a copy stands somewhere else.
+- **One scene jumps.** If the active scene has none and exactly one other scene does, the jump goes
+  there without asking.
+- **Several scenes ask.** A small dialog lists the scenes that have one, the navigation bar's first
+  in bar order, then the rest by name; one click jumps, or cancel.
+- **None says so.** With no token anywhere, the view goes to the active scene and a notice reads
+  "<character> has no token on any scene".
+
+A player sees the button on their own row, when they have an assigned character. A GM sees one on
+every row whose user has one, their own included, and the jump works the same from there: a quick
+way to find any player's character. A user with no assigned character has no button. Viewing the
+scene needs no ownership, as with the landing scene; selecting the token needs what the player
+already has, control of their own character.
 
 ## Good to know
 

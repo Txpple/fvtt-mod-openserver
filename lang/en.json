@@ -1,3 +1,15 @@
 {
-  "fvtt-mod-openserver": {}
+  "fvtt-mod-openserver": {
+    "jump": {
+      "tooltip": "Jump to {name}",
+      "pick": {
+        "title": "Jump to {name}",
+        "content": "{name} has a token on more than one scene. Which one?",
+        "cancel": "Cancel"
+      },
+      "none": "{name} has no token on any scene",
+      "gone": "{name}'s token is no longer on {scene}",
+      "busy": "The canvas is still loading; try the jump again in a moment"
+    }
+  }
 }

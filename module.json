@@ -9,7 +9,11 @@
     }
   ],
   "esmodules": [
-    "scripts/openserver.js"
+    "scripts/openserver.js",
+    "scripts/jump.js"
+  ],
+  "styles": [
+    "styles/openserver.css"
   ],
   "languages": [
     {

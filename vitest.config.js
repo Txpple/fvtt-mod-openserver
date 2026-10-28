@@ -7,7 +7,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["tests/**/*.test.js"],
-    passWithNoTests: true
+    include: ["tests/**/*.test.js"]
   }
 });
