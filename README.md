@@ -62,8 +62,9 @@ landing scene can also be assigned from Claude Code.
 
 ## Development
 
-There is no build step: the module is one plain ES module, `scripts/openserver.js`, loaded
-straight from the repo.
+There is no build step: the module is plain ES modules loaded straight from `scripts/`. Run
+`npm install` once; `npm run verify` is the gate: Biome and the unit tests in `tests/`. Every word a
+player reads is in `lang/en.json`.
 
 Releases: bump `version` and the `download` URL in `module.json` together and commit, then
 push an annotated tag `vX.Y.Z` on `main` whose subject is the release title and whose body is the

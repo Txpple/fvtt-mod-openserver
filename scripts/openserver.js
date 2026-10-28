@@ -25,6 +25,11 @@
  *    If a GM *is* online while the world is paused, that pause is presumed
  *    deliberate and is respected.
  */
+// The module's one voice in the console: the family's convention allows warn and error alone,
+// and these are notices, so they are the one place Biome looks away.
+// biome-ignore lint/suspicious/noConsole: the module's notices
+const say = (...args) => console.log(...args);
+
 Hooks.once("ready", () => {
   if (!game.paused) return;
 
@@ -38,7 +43,7 @@ Hooks.once("ready", () => {
     if (gen >= 12) game.togglePause(false, { broadcast: true });
     else game.togglePause(false, true);
 
-    console.log("fvtt-mod-openserver | World unpaused for everyone.");
+    say("fvtt-mod-openserver | World unpaused for everyone.");
     return;
   }
 
@@ -47,7 +52,7 @@ Hooks.once("ready", () => {
 
   // No GM online: lift the pause locally so this player can act.
   game.togglePause(false);
-  console.log(
+  say(
     "fvtt-mod-openserver | No GM online — pause lifted locally for this player."
   );
 });
@@ -113,7 +118,7 @@ Hooks.once("ready", () => {
       err
     );
   });
-  console.log(
+  say(
     `fvtt-mod-openserver | Landing scene for "${game.user.name}": "${scene.name}".`
   );
 });
