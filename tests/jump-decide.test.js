@@ -1,5 +1,5 @@
 // Where "Jump to my character" goes (scripts/jump-decide.js).
-import { decideJump, orderScenes, scenesWithToken } from "../scripts/jump-decide.js";
+import { candidatesOf, decideJump, orderScenes, scenesWithToken } from "../scripts/jump-decide.js";
 
 const scene = (id, extra = {}) => ({ id, name: id, tokenId: null, ...extra });
 
@@ -186,5 +186,83 @@ describe("reading the scenes", () => {
       { id: "b", name: "B", active: false, navigation: false, navOrder: 0, tokenId: "y" }
     ]);
     expect(scenesWithToken("pc", undefined)).toEqual([]);
+  });
+});
+
+describe("who the crosshair can jump to", () => {
+  const tok = (id, actorId, extra = {}) => ({
+    id,
+    actorId,
+    name: id,
+    actorName: actorId,
+    ...extra
+  });
+  const pc = "pc1";
+  const scenes = [
+    {
+      id: "town",
+      name: "Town",
+      active: true,
+      tokens: [
+        tok("t-pc", pc),
+        tok("t-owl", "owlActor", { name: "Omen", summonOrigin: "Actor.pc1.Item.ff" })
+      ]
+    },
+    {
+      id: "attic",
+      name: "Attic",
+      tokens: [
+        tok("t-owl2", "owlActor", { name: "Omen", summonOrigin: "Actor.pc1.Item.ff" }),
+        tok("t-steed", "horse", { name: "Bess", owned: true }),
+        tok("t-npc", "npc1"),
+        tok("t-other", "elem", { summonOrigin: "Actor.someoneElse.Item.x" })
+      ]
+    }
+  ];
+
+  it("lists the character first, then summons, then owned creatures, each named by its token", () => {
+    const out = candidatesOf({ characterId: pc, characterName: "Tychon", scenes });
+    expect(out.map(c => [c.kind, c.label, c.actorId])).toEqual([
+      ["character", "Tychon", pc],
+      ["summon", "Omen", "owlActor"],
+      ["owned", "Bess", "horse"]
+    ]);
+    expect(out[1].scenes.map(s => [s.id, s.tokenId])).toEqual([
+      ["town", "t-owl"],
+      ["attic", "t-owl2"]
+    ]);
+    expect(out[2].scenes.map(s => s.tokenId)).toEqual([null, "t-steed"]);
+    expect(decideJump({ scenes: out[1].scenes, activeSceneId: "town" })).toEqual({
+      kind: "jump",
+      sceneId: "town",
+      tokenId: "t-owl"
+    });
+  });
+
+  it("keeps the character even with no token, and skips a creature with none", () => {
+    const out = candidatesOf({
+      characterId: pc,
+      characterName: "Tychon",
+      scenes: [{ id: "a", name: "A", tokens: [] }]
+    });
+    expect(out).toHaveLength(1);
+    expect(out[0].scenes[0].tokenId).toBe(null);
+    expect(candidatesOf({ characterId: null, scenes }).map(c => c.label)).toEqual(["Bess"]);
+  });
+
+  it("names a creature by its actor when its tokens disagree", () => {
+    const two = [
+      {
+        id: "a",
+        name: "A",
+        tokens: [
+          tok("1", "wolf", { name: "Wolf 1", owned: true, actorName: "Wolf" }),
+          tok("2", "wolf", { name: "Wolf 2", owned: true, actorName: "Wolf" })
+        ]
+      }
+    ];
+    expect(candidatesOf({ characterId: pc, characterName: "T", scenes: two })[1].label).toBe(
+      "Wolf"
+    );
   });
 });

@@ -87,3 +87,65 @@ export function scenesWithToken(actorId, scenes) {
   }
   return out;
 }
+
+/**
+ * Who the crosshair can jump to for one user: the assigned character first (always, so the "none"
+ * notice can speak), then the creatures the character has summoned (dnd5e stamps a summoned token's
+ * actor with `flags.dnd5e.summon.origin`, the summoning item's uuid under the character), then any
+ * other actor the user owns outright; a creature counts only while it has a token on some scene.
+ * Summons and owned creatures are named by their token when every token agrees, else by the actor.
+ *
+ * `scenes` is plain data: each `{ id, name, active, navigation, navOrder, tokens }` with tokens
+ * `{ id, name, actorId, actorName, summonOrigin, owned }` (`owned`: the user owns the token's actor
+ * explicitly). The result is one entry per creature with its `scenes` ready for decideJump.
+ *
+ * @param {{ characterId: string | null, characterName?: string, scenes: Array<object> }} input
+ * @returns {Array<{ actorId: string, label: string, kind: "character" | "summon" | "owned", scenes: JumpScene[] }>}
+ */
+export function candidatesOf({ characterId = null, characterName = "", scenes }) {
+  const all = (scenes ?? []).filter(Boolean);
+  const bare = s => ({
+    id: s.id,
+    name: s.name,
+    active: !!s.active,
+    navigation: !!s.navigation,
+    navOrder: s.navOrder ?? 0
+  });
+  const found = new Map(); // actorId -> { kind, actorName, tokenNames: Set, perScene: Map<sceneId, tokenId> }
+  const summonPrefix = characterId ? `Actor.${characterId}.` : null;
+  for (const scene of all) {
+    for (const token of scene.tokens ?? []) {
+      if (!token?.actorId || token.actorId === characterId) continue;
+      const summoned = summonPrefix && String(token.summonOrigin ?? "").startsWith(summonPrefix);
+      if (!summoned && !token.owned) continue;
+      let entry = found.get(token.actorId);
+      if (!entry) {
+        entry = { kind: summoned ? "summon" : "owned", actorName: token.actorName ?? "", tokenNames: new Set(), perScene: new Map() };
+        found.set(token.actorId, entry);
+      } else if (summoned && entry.kind === "owned") entry.kind = "summon";
+      if (token.name) entry.tokenNames.add(token.name);
+      if (!entry.perScene.has(scene.id)) entry.perScene.set(scene.id, token.id);
+    }
+  }
+  const out = [];
+  if (characterId) {
+    out.push({
+      actorId: characterId,
+      label: characterName,
+      kind: "character",
+      scenes: all.map(s => ({
+        ...bare(s),
+        tokenId: (s.tokens ?? []).find(t => t?.actorId === characterId)?.id ?? null
+      }))
+    });
+  }
+  const others = [...found.entries()].map(([actorId, e]) => ({
+    actorId,
+    label: e.tokenNames.size === 1 ? [...e.tokenNames][0] : e.actorName || [...e.tokenNames][0] || actorId,
+    kind: e.kind,
+    scenes: all.map(s => ({ ...bare(s), tokenId: e.perScene.get(s.id) ?? null }))
+  }));
+  const rank = { summon: 0, owned: 1 };
+  others.sort((a, b) => rank[a.kind] - rank[b.kind] || a.label.localeCompare(b.label));
+  return [...out, ...others];
+}

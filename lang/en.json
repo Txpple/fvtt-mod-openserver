@@ -5,6 +5,7 @@
       "pick": {
         "title": "Jump to {name}",
         "content": "{name} has a token on more than one scene. Which one?",
+        "creature": "{name} has creatures out. Which one?",
         "jump": "Jump",
         "cancel": "Cancel"
       },

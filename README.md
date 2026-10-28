@@ -51,6 +51,12 @@ Which token:
 - **A player with the table stays.** On the active scene with the token elsewhere, a player is not
   taken off it; a notice says the token is on another scene. A GM jumps from anywhere to anywhere.
 
+**Your familiar too.** A character with creatures out gets a small menu from the same crosshair:
+the character first, then what it has summoned, a familiar, a steed, a spirit, named as their tokens
+are, then anything else the user owns outright, each while it has a token on some scene. One click
+on a name jumps to it by the same rule, except that a creature is never held back by the stay rule:
+fetching it from another map is the point. No creatures out, no menu: the click jumps straight.
+
 A player sees the button on their own row, when they have an assigned character. A GM sees one on
 every row whose user has one, their own included, and the jump works the same from there: a quick
 way to find any player's character. A user with no assigned character has no button. Viewing a
