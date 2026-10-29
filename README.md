@@ -31,7 +31,7 @@ Requires Foundry VTT v11 through v14. It works with any game system and has no d
 
 A player who walked a familiar onto another map, or was left on a side scene after a teleport went
 wrong, had no way back to their own character short of asking the GM. Now a crosshair sits beside
-their name in the Players list (bottom left). Hover it and it reads "Jump to <character>"; click it
+their name in the Players list (bottom left). Hover it and it reads "Jump To Actor ..."; click it
 and the view goes to the character's token, selects it, releasing anything else selected, and pans
 to it. All of it happens on the clicking user's own client; nothing is written and no GM is needed.
 

@@ -68,11 +68,11 @@ function characterFor(user) {
   return user.character;
 }
 
-function makeButton(character) {
+function makeButton() {
   const button = document.createElement("button");
   button.type = "button";
   button.className = `${BUTTON_CLASS} icon fa-solid fa-crosshairs`;
-  const label = say("tooltip", { name: character.name });
+  const label = say("tooltip");
   button.setAttribute("aria-label", label);
   // v13+ reads data-tooltip-text as text; older cores read data-tooltip as HTML, so it is escaped.
   button.dataset.tooltipText = label;
@@ -191,9 +191,8 @@ Hooks.on("renderPlayers", (_app, html) => {
   for (const row of root.querySelectorAll("li.player[data-user-id]")) {
     if (row.querySelector(`.${BUTTON_CLASS}`)) continue;
     const user = game.users.get(row.dataset.userId);
-    const character = characterFor(user);
-    if (!character) continue;
-    const button = makeButton(character);
+    if (!characterFor(user)) continue;
+    const button = makeButton();
     if (!hasMenu) {
       button.addEventListener("click", event => {
         event.preventDefault();

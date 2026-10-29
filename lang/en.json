@@ -1,7 +1,7 @@
 {
   "fvtt-mod-openserver": {
     "jump": {
-      "tooltip": "Jump to {name}",
+      "tooltip": "Jump To Actor ...",
       "pick": {
         "title": "Jump to {name}",
         "content": "{name} has a token on more than one scene. Which one?",
