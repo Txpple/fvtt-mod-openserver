@@ -134,7 +134,9 @@ function bindMenu(root) {
   const ContextMenu = foundry.applications?.ux?.ContextMenu;
   if (!ContextMenu) return false;
   if (menus.has(root)) return true;
+  // `jQuery: false`: the callbacks take HTMLElements (v13 warns without it, v15 drops jQuery).
   const menu = new ContextMenu(root, `.${BUTTON_CLASS}`, [], {
+    jQuery: false,
     eventName: "click",
     fixed: true,
     relative: "target",
